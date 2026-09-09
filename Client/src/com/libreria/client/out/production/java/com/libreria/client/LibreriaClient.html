@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Libreria</title>
+  <style>
+    :root {
+      --bg: #121212;
+      --surface: #1a1a1a;
+      --text: #e8e8e8;
+      --text-dim: #9a9a9a;
+      --border: #333333;
+      --border-light: #2a2a2a;
+      --accent: #e8e8e8;
+      --accent-text: #121212;
+      --danger: #e05a5a;
+      --danger-bg: #2a1414;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 12px 20px;
+    }
+
+    header h1 {
+      font-size: 18px;
+      margin: 0 0 10px;
+    }
+
+    nav button {
+      font-family: inherit;
+      font-size: 14px;
+      background: none;
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 6px 14px;
+      cursor: pointer;
+      margin-right: 6px;
+    }
+
+    nav button.active {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    section.panel { display: none; }
+    section.panel.active { display: block; }
+
+    .box {
+      background: var(--surface);
+      border: 1px solid var(--border-light);
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .box h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-dim);
+      margin: 0 0 10px;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .row input, .row select {
+      flex: 1;
+      min-width: 100px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 3px;
+    }
+
+    input, select {
+      width: 100%;
+      font-family: inherit;
+      font-size: 14px;
+      padding: 7px 8px;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    button {
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn {
+      padding: 7px 14px;
+      border: 1px solid var(--accent);
+      background: var(--accent);
+      color: var(--accent-text);
+    }
+
+    .btn:hover { filter: brightness(1.15); }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--text-dim); }
+
+    .btn-delete {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid var(--danger);
+      padding: 5px 10px;
+      font-size: 13px;
+    }
+
+    .btn-delete:hover { background: var(--danger-bg); }
+
+    .resultshead {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+
+    .resultshead h2 {
+      font-size: 15px;
+      margin: 0;
+    }
+
+    .resultshead .count {
+      font-size: 12px;
+      color: var(--text-dim);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+
+    th, td {
+      text-align: left;
+      padding: 8px 6px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+    }
+
+    .empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+      border: 1px dashed var(--border);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 10px 20px;
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    footer input {
+      width: 200px;
+      font-size: 12px;
+      padding: 4px 6px;
+    }
+
+    #log {
+      position: fixed;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .toast {
+      font-size: 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 8px 12px;
+      max-width: 280px;
+    }
+
+    .toast.err { background: var(--danger); color: var(--accent-text); border-color: var(--danger); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Libreria</h1>
+  <nav>
+    <button class="active" data-panel="libri">Libri</button>
+    <button data-panel="scaffali">Scaffali</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- ===================== LIBRI ===================== -->
+  <section class="panel active" data-panel="libri">
+
+    <div class="box">
+      <h2>Cerca</h2>
+      <div class="row">
+        <input id="l-search" type="text" placeholder="Titolo o ID libro">
+        <button class="btn" onclick="cercaLibro()">Cerca</button>
+        <button class="btn-secondary" onclick="mostraTuttiLibri()">Tutti</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>Aggiungi</h2>
+      <div class="row">
+        <div style="flex:1 1 140px">
+          <label>Scaffale</label>
+          <select id="l-scaffale-select" onchange="toggleNuovoScaffale()">
+            <option value="">Caricamento…</option>
+          </select>
+        </div>
+        <div style="flex:2 1 160px">
+          <label>Titolo</label>
+          <input id="l-titolo" type="text">
+        </div>
+        <div style="flex:2 1 160px">
+          <label>Autore</label>
+          <input id="l-autore" type="text">
+        </div>
+        <div style="flex:1 1 140px">
+          <label>Genere</label>
+          <select id="l-genere">
+            <option value="NARRATIVA">Narrativa</option>
+            <option value="SAGGISTICA">Saggistica</option>
+            <option value="FANTASY">Fantasy</option>
+            <option value="GIALLO" selected>Giallo</option>
+            <option value="FANTASCIENZA">Fantascienza</option>
+            <option value="STORIA">Storia</option>
+          </select>
+        </div>
+        <div style="flex:0 0 auto; align-self:flex-end">
+          <button class="btn" onclick="creaLibro()">Aggiungi</button>
+        </div>
+      </div>
+      <div class="row" id="l-nuovo-scaffale-row" style="display:none; margin-top:8px">
+        <div style="flex:0 0 160px">
+          <label>Capienza del nuovo scaffale</label>
+          <input id="l-nuova-capienza" type="number" min="1" placeholder="es. 5">
+        </div>
+      </div>
+    </div>
+
+    <div class="resultshead">
+      <h2 id="l-titolo-risultati">Tutti i libri</h2>
+      <span class="count" id="l-count">—</span>
+    </div>
+    <div id="l-results"><div class="empty">Caricamento…</div></div>
+  </section>
+
+  <!-- ===================== SCAFFALI ===================== -->
+  <section class="panel" data-panel="scaffali">
+
+    <div class="box">
+      <h2>Cerca</h2>
+      <div class="row">
+        <input id="sc-search" type="number" min="1" placeholder="ID scaffale">
+        <button class="btn" onclick="cercaScaffale()">Cerca</button>
+        <button class="btn-secondary" onclick="mostraTuttiScaffali()">Tutti</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>Aggiungi</h2>
+      <div class="row">
+        <div style="flex:1">
+          <label>Capienza massima</label>
+          <input id="sc-capienza" type="number" min="1">
+        </div>
+        <div style="flex:0 0 auto; align-self:flex-end">
+          <button class="btn" onclick="creaScaffale()">Aggiungi</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="resultshead">
+      <h2 id="sc-titolo-risultati">Tutti gli scaffali</h2>
+      <span class="count" id="sc-count">—</span>
+    </div>
+    <div id="sc-results"><div class="empty">Caricamento…</div></div>
+  </section>
+
+</main>
+
+<footer>
+  <span>Libri: <strong id="stat-libri">—</strong> · Scaffali: <strong id="stat-scaffali">—</strong></span>
+  <span>Base URL <input id="base-url" value="http://localhost:8080/api"></span>
+</footer>
+
+<div id="log"></div>
+
+<script>
+  const $ = sel => document.querySelector(sel);
+  const baseUrl = () => $('#base-url').value.replace(/\/$/, '');
+
+  // ---------- tabs ----------
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('section.panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelector(`section.panel[data-panel="${btn.dataset.panel}"]`).classList.add('active');
+    });
+  });
+
+  // ---------- toast ----------
+  function toast(msg, isErr){
+    const el = document.createElement('div');
+    el.className = 'toast' + (isErr ? ' err' : '');
+    el.textContent = msg;
+    $('#log').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  // ---------- fetch helper ----------
+  async function api(path, options){
+    const url = baseUrl() + path;
+    try{
+      const res = await fetch(url, options);
+      const text = await res.text();
+      const data = text ? JSON.parse(text) : null;
+      if(!res.ok){
+        const msg = (data && (data.message || data.error)) || `Errore ${res.status}`;
+        toast(`${res.status} — ${msg}`, true);
+        return null;
+      }
+      return data;
+    }catch(e){
+      toast('Connessione fallita: il server è avviato?', true);
+      return null;
+    }
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ================= LIBRI =================
+
+  function renderLibri(libri, titolo){
+    $('#l-titolo-risultati').textContent = titolo;
+    $('#l-count').textContent = libri ? `${libri.length} risultat${libri.length===1?'o':'i'}` : '';
+    const el = $('#l-results');
+    if(!libri || libri.length === 0){
+      el.innerHTML = '<div class="empty">Nessun libro trovato.</div>';
+      return;
+    }
+    el.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Titolo</th><th>Autore</th><th>Genere</th><th>Scaffale</th><th></th></tr></thead>
+        <tbody>
+          ${libri.map(l => `
+            <tr>
+              <td>${l.id}</td>
+              <td>${escapeHtml(l.titolo)}</td>
+              <td>${escapeHtml(l.autore)}</td>
+              <td>${l.genere}</td>
+              <td>${l.scaffaleId ?? '—'}</td>
+              <td><button class="btn-delete" onclick="eliminaLibro(${l.id})">Elimina</button></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function mostraTuttiLibri(){
+    $('#l-search').value = '';
+    const data = await api('/libri');
+    if(data) renderLibri(data, 'Tutti i libri');
+    aggiornaConteggi();
+  }
+
+  async function cercaLibro(){
+    const v = $('#l-search').value.trim();
+    if(!v){ mostraTuttiLibri(); return; }
+    if(/^\d+$/.test(v)){
+      const libro = await api(`/libri/${v}`);
+      renderLibri(libro ? [libro] : [], `Scheda ${v}`);
+      return;
+    }
+    const data = await api(`/libri/titolo/${encodeURIComponent(v)}`);
+    if(data) renderLibri(data, `Titolo: "${v}"`);
+  }
+
+  // Popola la tendina degli scaffali disponibili nel form "Aggiungi libro"
+  async function popolaTendinaScaffali(){
+    const select = $('#l-scaffale-select');
+    const valorePrecedente = select.value;
+    const scaffali = await api('/scaffali');
+    select.innerHTML = '';
+
+    if(scaffali && scaffali.length > 0){
+      scaffali.forEach(s => {
+        const occ = (s.libri || []).length;
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `Scaffale ${s.id} (${occ}/${s.capienzaMassima})`;
+        select.appendChild(opt);
+      });
+    }
+
+    const optNuovo = document.createElement('option');
+    optNuovo.value = '__nuovo__';
+    optNuovo.textContent = '+ Nuovo scaffale…';
+    select.appendChild(optNuovo);
+
+    // riseleziona lo scaffale scelto in precedenza, se ancora esiste
+    if(valorePrecedente && [...select.options].some(o => o.value === valorePrecedente)){
+      select.value = valorePrecedente;
+    }
+    toggleNuovoScaffale();
+  }
+
+  function toggleNuovoScaffale(){
+    const mostraCampo = $('#l-scaffale-select').value === '__nuovo__';
+    $('#l-nuovo-scaffale-row').style.display = mostraCampo ? 'flex' : 'none';
+  }
+
+  async function creaLibro(){
+    let scaffaleId = $('#l-scaffale-select').value;
+    const titolo = $('#l-titolo').value.trim();
+    const autore = $('#l-autore').value.trim();
+    const genere = $('#l-genere').value;
+
+    if(!scaffaleId || !titolo || !autore){
+      toast('Scegli uno scaffale e compila titolo e autore.', true);
+      return;
+    }
+
+    // Se l'utente ha scelto "+ Nuovo scaffale…", lo creiamo prima con la capienza indicata
+    if(scaffaleId === '__nuovo__'){
+      const capienza = $('#l-nuova-capienza').value;
+      if(!capienza){
+        toast('Indica la capienza del nuovo scaffale.', true);
+        return;
+      }
+      const nuovoScaffale = await api('/scaffali', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ capienzaMassima: Number(capienza) })
+      });
+      if(!nuovoScaffale) return; // errore già segnalato da api()
+      scaffaleId = nuovoScaffale.id;
+      toast(`Scaffale ${scaffaleId} creato (capienza ${nuovoScaffale.capienzaMassima}).`);
+    }
+
+    const data = await api(`/libri/scaffale/${scaffaleId}`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ titolo, autore, genere })
+    });
+    if(data){
+      toast(`"${data.titolo}" aggiunto (ID ${data.id}).`);
+      $('#l-titolo').value = ''; $('#l-autore').value = '';
+      $('#l-nuova-capienza').value = '';
+      mostraTuttiLibri();
+      popolaTendinaScaffali();
+    }
+  }
+
+  async function eliminaLibro(id){
+    if(!confirm(`Eliminare il libro ${id}?`)) return;
+    const res = await fetch(`${baseUrl()}/libri/${id}`, { method: 'DELETE' });
+    if(res.ok){
+      toast(`Libro ${id} eliminato.`);
+      mostraTuttiLibri();
+    }else{
+      toast(`Errore ${res.status} durante l'eliminazione.`, true);
+    }
+    aggiornaConteggi();
+  }
+
+  // ================= SCAFFALI =================
+
+  function renderScaffali(scaffali, titolo){
+    $('#sc-titolo-risultati').textContent = titolo;
+    $('#sc-count').textContent = scaffali ? `${scaffali.length} scaffal${scaffali.length===1?'e':'i'}` : '';
+    const el = $('#sc-results');
+    if(!scaffali || scaffali.length === 0){
+      el.innerHTML = '<div class="empty">Nessuno scaffale trovato.</div>';
+      return;
+    }
+    el.innerHTML = `
+      <table>
+        <thead><tr><th>ID</th><th>Capienza</th><th>Occupati</th><th></th></tr></thead>
+        <tbody>
+          ${scaffali.map(s => {
+      const occ = (s.libri || []).length;
+      return `
+              <tr>
+                <td>${s.id}</td>
+                <td>${s.capienzaMassima}</td>
+                <td>${occ} / ${s.capienzaMassima}</td>
+                <td><button class="btn-delete" onclick="eliminaScaffale(${s.id})">Elimina</button></td>
+              </tr>
+            `;
+    }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  async function mostraTuttiScaffali(){
+    $('#sc-search').value = '';
+    const data = await api('/scaffali');
+    if(data) renderScaffali(data, 'Tutti gli scaffali');
+    aggiornaConteggi();
+  }
+
+  async function cercaScaffale(){
+    const v = $('#sc-search').value.trim();
+    if(!v){ mostraTuttiScaffali(); return; }
+    if(!/^\d+$/.test(v)){ toast('Inserisci un ID numerico.', true); return; }
+    const scaffale = await api(`/scaffali/${v}`);
+    renderScaffali(scaffale ? [scaffale] : [], `Scaffale ${v}`);
+  }
+
+  async function creaScaffale(){
+    const capienzaMassima = $('#sc-capienza').value;
+    if(!capienzaMassima){ toast('Indica la capienza massima.', true); return; }
+    const data = await api('/scaffali', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ capienzaMassima: Number(capienzaMassima) })
+    });
+    if(data){
+      toast(`Scaffale ${data.id} creato.`);
+      $('#sc-capienza').value = '';
+      mostraTuttiScaffali();
+      popolaTendinaScaffali();
+    }
+  }
+
+  async function eliminaScaffale(id){
+    if(!confirm(`Eliminare lo scaffale ${id}?`)) return;
+    const res = await fetch(`${baseUrl()}/scaffali/${id}`, { method: 'DELETE' });
+    if(res.ok){
+      toast(`Scaffale ${id} eliminato.`);
+      mostraTuttiScaffali();
+    }else{
+      const text = await res.text();
+      let msg = `Errore ${res.status}`;
+      try{ const d = JSON.parse(text); msg = d.message || d.error || msg; }catch(e){}
+      toast(msg, true);
+    }
+    aggiornaConteggi();
+  }
+
+  // ================= conteggi =================
+  async function aggiornaConteggi(){
+    const [libri, scaffali] = await Promise.all([ api('/libri/conteggio'), api('/scaffali/conteggio') ]);
+    if(libri !== null) $('#stat-libri').textContent = libri;
+    if(scaffali !== null) $('#stat-scaffali').textContent = scaffali;
+  }
+
+  // ================= avvio =================
+  mostraTuttiLibri();
+  mostraTuttiScaffali();
+  popolaTendinaScaffali();
+</script>
+
+</body>
+</html>
